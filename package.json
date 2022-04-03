@@ -5,7 +5,8 @@
   "main": "/bin/index.js",
   "scripts": {
     "run": "node ./bin/index.js",
-    "test": "node ./test/create-nest-project.js"
+    "project": "node ./test/create-nest-project.js",
+    "module": "node ./test/create-nest-module.js"
   },
   "author": "",
   "license": "ISC",

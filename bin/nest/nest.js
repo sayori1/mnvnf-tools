@@ -50,6 +50,24 @@ helper.commands.command(
   }
 );
 
+function generateCodeForController(module, model) {
+  let Module = utils.capitalize(module);
+  let Model = utils.capitalize(model);
+
+  let data = fs.readFileSync(paths.nestMethodsController);
+  let controller = data.toString();
+  data = fs.readFileSync(paths.nestMethodsService);
+  let service = data.toString();
+
+  controller.replace("{model}", model);
+  controller.replace("{Model}", Model);
+  controller.replace("{Module}", Module);
+  for (var i = 0; i < 10; i += 1)
+    controller = controller.replace("{module}", module); //analog of replaceAll
+
+  return { controller, service };
+}
+
 async function createNestModule(name, modelsToCreate = []) {
   const dir = process.cwd() + `/${name}`;
 
@@ -67,6 +85,9 @@ async function createNestModule(name, modelsToCreate = []) {
   let serviceDeps = "";
   let serviceImports = "";
   let moduleImports = "";
+  let controllerImports = "";
+  let controllerCode = "";
+  let serviceCode = "";
 
   if (modelsToCreate.length != []) {
     for (let model of modelsToCreate) {
@@ -75,7 +96,12 @@ async function createNestModule(name, modelsToCreate = []) {
       moduleDeps += `MongooseModule.forFeature([{ name: ${Model}.name, schema: ${Model}Schema }]),`;
       serviceDeps += `@InjectModel(${Model}.name) private ${model.name.toLowerCase()}Model: Model<${Model}Document>,`;
       serviceImports += `import { ${Model}, ${Model}Document } from './${model.name}Model/schema/${model.name}.schema';\n`;
+      serviceImports += `import { Create${Model}Dto } from './${model.name}Model/dto/create-${model.name}.dto';\n`;
+      controllerImports += `import { Create${Model}Dto } from './${model.name}Model/dto/create-${model.name}.dto';`;
       moduleImports += `import { ${Model}, ${Model}Schema } from "./${model.name}Model/schema/${model.name}.schema";\n`;
+      let code = generateCodeForController(name, model.name);
+      controllerCode += code.controller;
+      serviceCode += code.service;
     }
   }
 
@@ -83,7 +109,10 @@ async function createNestModule(name, modelsToCreate = []) {
     "{module-deps}": moduleDeps,
     "{service-deps}": serviceDeps,
     "{module-imports}": moduleImports,
-    "{service-imports": serviceImports,
+    "{service-imports}": serviceImports,
+    "{controller-imports}": controllerImports,
+    "{controller-code}": controllerCode,
+    "{service-code}": serviceCode,
   };
 
   utils.replaceMany(toReplace, dir);
