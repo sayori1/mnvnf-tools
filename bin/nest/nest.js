@@ -140,4 +140,4 @@ helper.commands.command(
     createNestModelCli();
   }
 );
-export default { createNestProject };
+export default { createNestProject, createNestModel, createNestModule };
