@@ -1,28 +1,29 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 
-export async function createNestModelInquirer() {
-  console.log(chalk.green("Ok, you want to generate Nest model"));
+export async function createNestProjectInquirer() {
+  console.log(chalk.green("Generating Nest project..."));
 
   let { name } = await inquirer.prompt({
-    message: "Let's name the model: ",
+    message: "Let's name the project: ",
     name: "name",
   });
 
-  let propsToCreate = [];
+  let modulesToCreate = [];
   while (true) {
     let { answer } = await inquirer.prompt({
-      message: "create new prop [name: type] or no",
+      message: "create new module y/n?",
       name: "answer",
     });
-    if (answer == "no") break;
-    else propsToCreate.push(answer);
+    if (answer == "n") break;
+    if (answer == "y") modulesToCreate.push(await createNestModuleInquirer());
   }
-  return { propsToCreate, name };
+
+  return { name, modulesToCreate };
 }
 
 export async function createNestModuleInquirer() {
-  console.log(chalk.green("Ok, you want to generate Nest module"));
+  console.log(chalk.green("Generating Nest module..."));
 
   let { name } = await inquirer.prompt({
     message: "Let's name the module: ",
@@ -40,4 +41,24 @@ export async function createNestModuleInquirer() {
   }
 
   return { name, modelsToCreate };
+}
+
+export async function createNestModelInquirer() {
+  console.log(chalk.green("Generating Nest model..."));
+
+  let { name } = await inquirer.prompt({
+    message: "Let's name the model: ",
+    name: "name",
+  });
+
+  let propsToCreate = [];
+  while (true) {
+    let { answer } = await inquirer.prompt({
+      message: "create new prop [name: type] or no",
+      name: "answer",
+    });
+    if (answer == "no") break;
+    else propsToCreate.push(answer);
+  }
+  return { propsToCreate, name };
 }

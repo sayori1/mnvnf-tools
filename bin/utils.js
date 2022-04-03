@@ -69,4 +69,8 @@ function prettierMany(dir) {
   }
   throughDir(dir);
 }
-export default { renameFilesAndDirs, replaceMany, prettierMany };
+
+function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+export default { renameFilesAndDirs, replaceMany, prettierMany, capitalize };
