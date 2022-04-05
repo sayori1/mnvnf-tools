@@ -9,6 +9,7 @@ To do:
 - [ ] Vue default api routes
 - [ ] Flutter models
 - [ ] Flutter default api routes 
+- [ ] Integrate prettier
 
 ## How to use?
 
