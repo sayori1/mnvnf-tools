@@ -4,7 +4,9 @@
   "description": "",
   "main": "/bin/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "run": "node ./bin/index.js",
+    "project": "node ./test/create-nest-project.js",
+    "module": "node ./test/create-nest-module.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +21,7 @@
     "fs-extra": "^10.0.1",
     "get-installed-path": "^4.0.8",
     "inquirer": "^8.2.2",
+    "jest": "^27.5.1",
     "pkg-dir": "^6.0.1",
     "prettier": "^2.6.2",
     "replace": "^1.2.1",
