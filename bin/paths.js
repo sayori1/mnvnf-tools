@@ -11,6 +11,8 @@ const nestMethodsController =
   packageDir + `/bin/nest/templates/methods-for-controller.js`;
 const nestMethodsService =
   packageDir + `/bin/nest/templates/methods-for-service.js`;
+const nestAuthModule = packageDir + `/bin/nest/templates/auth_module`;
+const nestFileModule = packageDir + "/bin/nest/templates/file_module";
 
 export default {
   packageDir,
@@ -19,5 +21,7 @@ export default {
   nestModel,
   nestModule,
   nestMethodsController,
-  nestMethodsService
+  nestMethodsService,
+  nestAuthModule,
+  nestFileModule,
 };

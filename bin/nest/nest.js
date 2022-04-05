@@ -12,34 +12,42 @@ import {
   createNestModelInquirer,
   createNestModuleInquirer,
   createNestProjectInquirer,
+  nestOptional,
 } from "../inquirer.js";
 
-async function createNestProject(name, modulesToCreate) {
+async function createNestProject(name, modulesToCreate, optional) {
   await fse.copy(paths.nestProject, paths.currentDir + `/${name}`);
+
+  if (optional) {
+    await addNestAdditionalModules(optional.auth_module, optional.file_module);
+    if (optional.auth_module) {
+      modulesToCreate.push({ name: "auth", modulesToCreate: [] });
+      modulesToCreate.push({ name: "users", modulesToCreate: [] });
+    }
+    if (optional.file_module)
+      modulesToCreate.push({ name: "file", modulesToCreate: [] });
+  }
 
   let appModules = "";
   let appImports = "";
+  process.chdir(paths.currentDir + `/${name}/src`);
   if (modulesToCreate.length != []) {
-    process.chdir(paths.currentDir + `/${name}/src`);
-
     for (let module of modulesToCreate) {
       await createNestModule(module.name, module.modelsToCreate);
 
       let Name = utils.capitalize(module.name);
-      appModules += `${Name}Module,`;
-      appImports += `import { ${Name}Module } from "./${name}/${name}.module";\n`;
+      appModules += `${Name}Module,\n`;
+      appImports += `import { ${Name}Module } from "./${module.name}/${module.name}.module";\n`;
     }
     utils.replaceMany(
-      { "{app-modules}": appModules, "{app-imports}": appModules },
+      { "{app-modules}": appModules, "{app-imports}": appImports },
       paths.currentDir + `/${name}`
     );
   }
 }
 async function createNestProjectCli() {
   let ret = await createNestProjectInquirer();
-  await createNestProject(ret.name, ret.modulesToCreate);
-  console.log(chalk.blue("Project succesfully generated!"));
-  console.log(chalk.blue("make cd and call npm install"));
+  await createNestProject(ret.name, ret.modulesToCreate, ret.optional);
 }
 helper.commands.command(
   "nest-create",
@@ -50,7 +58,7 @@ helper.commands.command(
   }
 );
 
-function generateCodeForController(module, model) {
+function generateCode(module, model) {
   let Module = utils.capitalize(module);
   let Model = utils.capitalize(model);
 
@@ -70,7 +78,6 @@ function generateCodeForController(module, model) {
 
 async function createNestModule(name, modelsToCreate = []) {
   const dir = process.cwd() + `/${name}`;
-
   await fse.copy(paths.nestModule, dir);
 
   let toReplace = {
@@ -80,6 +87,7 @@ async function createNestModule(name, modelsToCreate = []) {
   utils.replaceMany(toReplace, dir);
   utils.renameFilesAndDirs(dir, "{module}", name);
 
+  let prevPath = process.cwd();
   process.chdir(process.cwd() + `/${name}`);
   let moduleDeps = "";
   let serviceDeps = "";
@@ -99,7 +107,7 @@ async function createNestModule(name, modelsToCreate = []) {
       serviceImports += `import { Create${Model}Dto } from './${model.name}Model/dto/create-${model.name}.dto';\n`;
       controllerImports += `import { Create${Model}Dto } from './${model.name}Model/dto/create-${model.name}.dto';`;
       moduleImports += `import { ${Model}, ${Model}Schema } from "./${model.name}Model/schema/${model.name}.schema";\n`;
-      let code = generateCodeForController(name, model.name);
+      let code = generateCode(name, model.name);
       controllerCode += code.controller;
       serviceCode += code.service;
     }
@@ -116,6 +124,7 @@ async function createNestModule(name, modelsToCreate = []) {
   };
 
   utils.replaceMany(toReplace, dir);
+  process.chdir(prevPath);
 }
 async function createNestModuleCli() {
   let ret = await createNestModuleInquirer();
@@ -184,4 +193,23 @@ helper.commands.command(
     createNestModelCli();
   }
 );
+
+async function addNestAdditionalModules(auth_module, file_module) {
+  if (auth_module) await fse.copy(paths.nestAuthModule, process.cwd());
+  if (file_module) await fse.copy(paths.nestFileModule, process.cwd());
+}
+async function addNestAdditionalModulesCli() {
+  let result = await nestOptional();
+  await addNestAdditionalModules(result.auth_module, result.file_module);
+  console.log(chalk.green("Modules added"));
+}
+helper.commands.command(
+  "nest-additional-modules",
+  "Add auth/guards module or file module",
+  () => {},
+  (args) => {
+    addNestAdditionalModulesCli();
+  }
+);
+
 export default { createNestProject, createNestModel, createNestModule };
